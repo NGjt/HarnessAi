@@ -1,0 +1,22 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "node .claude/hooks/pre-tool-check.mjs"
+      }
+    ],
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "node .claude/hooks/session-context.mjs"
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "node .claude/hooks/session-review.mjs"
+      }
+    ]
+  }
+}
