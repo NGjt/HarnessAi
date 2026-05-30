@@ -113,6 +113,33 @@ your-project/
 
 ---
 
+## Extensions
+
+The following features are disabled by default. Enable them as needed.
+
+### Enhanced Safety
+
+`pre-tool-check.mjs` contains additional safety rules (commented out). Uncomment to enable:
+- Block `rm -rf` dangerous operations
+- Block `git push --force`
+- Block `git reset --hard`
+
+### Quality Evaluation (Eval)
+
+Connect Stop Hook review results to automated evaluation to track AI output quality:
+- Add correctness scores to review reports
+- Track defect rate per change
+- Set a quality baseline and alert when it drops
+
+### Multi-Agent Teams
+
+Split complex tasks across multiple agents for parallel work:
+- Explore multiple approaches simultaneously and compare results
+- Separate frontend/backend/testing into parallel streams
+- Isolate long-running tasks from the main conversation
+
+---
+
 ## Migration
 
 ```bash
