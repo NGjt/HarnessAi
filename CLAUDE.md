@@ -49,3 +49,23 @@
 - PreToolUse 自动拦截危险操作
 - Stop 自动审查 diff，检查是否符合规则
 - 上次审查结果会在下次启动时自动加载
+
+# 成熟度路线图
+
+自评你当前的 Harness 工程水平，每级都是上行台阶：
+
+| 级别 | 名称 | 标志 | 你缺什么 |
+|:---:|---|----|----|
+| L0 | 裸用 | 没有 CLAUDE.md | 一切 |
+| L1 | 规则层 | 有 CLAUDE.md + 行为准则 | hooks、自动化 |
+| **L2** | **反馈回路** | **PreToolUse + SessionStart + Stop 已激活** | **← Harness Starter 出厂即此** |
+| L3 | 自动修正 | 加上 PostToolUse 自动格式化、更多拦截规则 | 一个 PostToolUse hook |
+| L4 | 自治系统 | Agent 定期扫描代码/文档一致性，自动发起修复 PR | 垃圾回收 Agent、定时任务 |
+
+# 扩展方向
+
+以下内容不包含在 Starter 里，按需自行添加：
+
+**PostToolUse 自动格式化** — 在 PreToolUse 同一目录下创建 hook 文件，AI 每次编辑后自动跑你项目的格式化命令（如 prettier、black、gofmt）。Hook 本身很简单，核心是绑定到你项目的工具链。不建议预设空壳——需要时再加。
+
+**垃圾回收 Agent**（L4 方向）— OpenAI 团队的做法：设一个定期运行的 Agent，扫描代码与文档的一致性（比如 README 的 API 示例是否还能跑通），发现不一致就自动创建修复 PR。可以用 MCP + 定时任务实现。比泛泛的"记录缺陷率"更具体、更可操作。
