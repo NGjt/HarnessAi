@@ -92,7 +92,8 @@ const report = [
   `${hasGoalRule ? "✅" : "❌"} Goal-Driven Execution`,
   "",
   "---",
-  "下次会话 SessionStart 时将自动加载此报告。",
+  "审查报告已累积至 .claude/reviews/，SessionStart 将自动加载最近几次记录。",
 ].filter(Boolean).join("\n");
 
-writeFileSync(join(reviewsDir, "latest.md"), report, "utf-8");
+const dateStr = new Date().toISOString().slice(0, 10).replace(/:/g, "-");
+writeFileSync(join(reviewsDir, `${dateStr}.md`), report, "utf-8");

@@ -42,13 +42,14 @@
 
 - **规则放 CLAUDE.md，工作流放 Skills**
 - 涉及文件操作先问用户意图
+- 每次对话只给 AI 看需要的内容，避免无关上下文稀释注意力
 
 # 自动审查闭环
 
 - SessionStart 自动注入 git 状态
 - PreToolUse 自动拦截危险操作
-- Stop 自动审查 diff，检查是否符合规则
-- 上次审查结果会在下次启动时自动加载
+- Stop 自动生成审查报告至 .claude/reviews/（按日期累积）
+- 下次 SessionStart 自动加载最近几次审查记录
 
 # 成熟度路线图
 

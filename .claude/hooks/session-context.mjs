@@ -1,4 +1,10 @@
 import { execSync } from "child_process";
+import { readdirSync, readFileSync, existsSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const projectRoot = join(__dirname, "../..");
 
 const run = (cmd) => {
   try {
@@ -24,6 +30,27 @@ if (status) {
 if (log) {
   lines.push("---", "最近 10 条提交:");
   lines.push(log);
+}
+
+// 加载最近 5 次审查报告
+const reviewsDir = join(projectRoot, ".claude/reviews");
+if (existsSync(reviewsDir)) {
+  const reviewFiles = readdirSync(reviewsDir)
+    .filter(f => f.endsWith(".md"))
+    .sort()
+    .reverse()
+    .slice(0, 5);
+
+  if (reviewFiles.length > 0) {
+    lines.push("---", `最近 ${reviewFiles.length} 次审查:`);
+    for (const file of reviewFiles) {
+      const content = readFileSync(join(reviewsDir, file), "utf-8");
+      const flagSection = (content.split("### 规则检查\n")[1] || "").split("\n###")[0] || "";
+      const flags = flagSection.split("\n").filter(l => l.trim());
+      lines.push(`${file.replace(".md", "")}:`);
+      lines.push(...flags.map(f => `  ${f}`));
+    }
+  }
 }
 
 lines.push("------------------------");
