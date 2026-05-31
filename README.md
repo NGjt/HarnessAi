@@ -107,10 +107,6 @@ your-project/
 { "go": { "command": "gopls", "args": [], "extensionToLanguage": { ".go": "go" } } }
 ```
 
-### 扩展安全规则
-
-`pre-tool-check.mjs` 中注释了 `rm -rf`、`git push --force` 等命令的拦截示例，取消注释即可启用。
-
 ---
 
 ## 扩展指南

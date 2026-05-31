@@ -60,6 +60,11 @@ if (claudeOk) {
     ok: !hasTemplatePlaceholder,
     hint: hasTemplatePlaceholder ? "还有占位符未替换，首次使用请对 AI 说「帮我初始化 Harness」" : "",
   });
+  checks.push({
+    name: "消除信息差 规则",
+    ok: content.includes("消除信息差"),
+    hint: content.includes("消除信息差") ? "" : "缺少 「消除信息差」 章节，建议从模板同步更新",
+  });
 }
 
 // 输出

@@ -107,10 +107,6 @@ your-project/
 { "go": { "command": "gopls", "args": [], "extensionToLanguage": { ".go": "go" } } }
 ```
 
-### Extended Safety
-
-`pre-tool-check.mjs` contains commented examples for blocking `rm -rf`, `git push --force`, etc. Uncomment to enable.
-
 ---
 
 ## Extensions

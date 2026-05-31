@@ -36,7 +36,12 @@ description: Initialize this project with the Harness Engineering starter templa
 
 ### 如果是已有项目（不含占位符）
 
-检查 CLAUDE.md 是否已包含 Karpathy 原则、全局约定、审查闭环等核心章节。
+检查 CLAUDE.md 是否已包含以下核心章节：
+- Karpathy 原则（Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution）
+- 消除信息差（追问 + 质疑）
+- 全局约定
+- 自动审查闭环
+
 如果缺失，补充进去。已有的内容不要覆盖。
 
 ## Step 3: 检查 Hook 文件
