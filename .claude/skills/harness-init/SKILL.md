@@ -5,9 +5,39 @@ description: Initialize this project with the Harness Engineering starter templa
 
 # Harness Init
 
-适用两种场景：
+适用三种场景：
+- **GitHub 安装**：用户说"帮我用 Harness Starter 初始化"——还没有模板文件
 - **新项目**：模板刚复制过来，CLAUDE.md 含占位符
 - **已有项目**：项目已经开发到一半，想加入 Harness
+
+## Step 0：检查模板文件是否存在
+
+检查项目根目录下是否有 `.claude/hooks/` 和 `CLAUDE.md`。
+
+### 如果不存在（GitHub 安装场景）
+
+用户直接让 AI 安装 Harness Starter，还没有模板文件。需要：
+
+1. 克隆模板到临时目录：
+   ```
+   git clone https://github.com/chenklein26-maker/Harness-Starter.git /tmp/harness-starter
+   ```
+2. 复制核心文件到项目：
+   ```
+   cp -r /tmp/harness-starter/.claude/  .claude/
+   cp    /tmp/harness-starter/CLAUDE.md ./
+   cp    /tmp/harness-starter/.lsp.json ./
+   cp    /tmp/harness-starter/.gitignore ./.gitignore 2>/dev/null || true
+   cp -r /tmp/harness-starter/scripts/  ./scripts/ 2>/dev/null || true
+   mkdir -p .github/workflows 2>/dev/null
+   cp -r /tmp/harness-starter/.github/ ./.github/ 2>/dev/null || true
+   ```
+3. 清理临时目录
+4. 继续执行 Step 1
+
+### 如果已存在
+
+跳过 Step 0，直接执行 Step 1。
 
 ## Step 1: 检测项目信息
 

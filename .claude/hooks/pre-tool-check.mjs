@@ -38,12 +38,18 @@ if (tool === "Write" || tool === "Edit") {
 
 // 若需额外拦截规则，可在此文件添加，或在 settings.json 中配置。
 const DANGEROUS_COMMANDS = [
-  /rm -rf/,            // 危险删除
-  /git push --force/,  // 强制推送
+  { pattern: /rm -rf/, label: "rm -rf", alt: "使用 trash <file> 或 git rm <file>" },
+  { pattern: /git push --force/, label: "git push --force", alt: "使用 git push --force-with-lease" },
 ];
-if ((tool === "Bash" || tool === "PowerShell") && DANGEROUS_COMMANDS.some(p => p.test(args.command || ""))) {
-  process.stdout.write(JSON.stringify({ block: true, reason: "已拦截危险命令" }));
-  process.exit(0);
+if (tool === "Bash" || tool === "PowerShell") {
+  const matched = DANGEROUS_COMMANDS.find((d) => d.pattern.test(args.command || ""));
+  if (matched) {
+    process.stdout.write(JSON.stringify({
+      block: true,
+      reason: `⚠️ 安全拦截：${matched.label} 被禁用\n   → 替代方案：${matched.alt}\n   → 如需强制执行，请在终端手动输入命令`,
+    }));
+    process.exit(0);
+  }
 }
 
 process.exit(0);

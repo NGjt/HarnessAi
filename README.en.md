@@ -28,13 +28,66 @@ Harness Starter automates this through three layers. Install once, use across al
 
 ---
 
-## Three Layers
+## Quick Start
 
-| Layer | Hook | Purpose |
-|-------|------|---------|
-| Safety | PreToolUse | Prevents AI from modifying `.env` and other sensitive files |
-| Awareness | SessionStart | Injects current git status automatically on each session |
-| Review | Stop | Audits changes after the conversation ends |
+### Option 1: Let AI Set It Up (Recommended)
+
+Tell Claude Code:
+
+```
+Initialize this project with Harness Starter
+```
+
+The AI will:
+1. Clone the template from GitHub
+2. Detect your project's tech stack
+3. Fill in CLAUDE.md, install Language Server
+4. Run health check to confirm everything is ready
+
+### Option 2: Manual Setup
+
+```bash
+# Clone the template
+git clone https://github.com/chenklein26-maker/Harness-Starter.git /tmp/harness
+
+# Copy to your project
+cp -r /tmp/harness/.claude/  /path/to/your-project/.claude/
+cp    /tmp/harness/CLAUDE.md /path/to/your-project/CLAUDE.md
+cp    /tmp/harness/.lsp.json /path/to/your-project/.lsp.json
+
+# Install language server
+npm install -g typescript-language-server   # TypeScript
+pip install pyright                         # Python
+
+# Verify
+cd /path/to/your-project && node scripts/check.mjs
+
+# Tell Claude Code: initialize Harness
+```
+
+---
+
+## Architecture
+
+During a conversation lifecycle, hooks fire automatically in this order:
+
+```mermaid
+flowchart LR
+  A[PreToolUse] --> B[Tool Call]
+  C[PostToolUse] --> B
+  B --> D[Response]
+  D --> E[Stop]
+  E --> F[SessionStart<br/>next session]
+  G[PreCompact] -.->|before compaction| D
+```
+
+| Hook | Timing | Purpose |
+|------|--------|---------|
+| PreToolUse | Before tool execution | Safety: .env protection, dangerous commands |
+| PostToolUse | After edits | Auto-format code |
+| PreCompact | Before context compaction | Preserve session state |
+| Stop | After each response | Audit changes, generate review |
+| SessionStart | New session begins | Inject git status, review history |
 
 ---
 
@@ -42,37 +95,43 @@ Harness Starter automates this through three layers. Install once, use across al
 
 ### AI Setup (Recommended)
 
-Copy the template into your project, then run this in Claude Code:
+Tell Claude Code:
 
 ```
-initialize Harness
+Initialize this project with Harness Starter
 ```
 
-The AI will detect your project's state:
+The AI will:
 
-- **New project**: Prompts for tech stack, fills CLAUDE.md, installs dependencies
-- **Existing project**: Reads `package.json` / `pyproject.toml` / `go.mod`, infers settings, doesn't touch existing config
+1. **Fetch** the template from GitHub
+2. **Copy** `.claude/`, `CLAUDE.md`, `.lsp.json` into your project
+3. **Detect** your tech stack from `package.json` / `pyproject.toml` / `go.mod`
+4. **Configure** CLAUDE.md placeholders, install Language Server
+5. **Verify** with `node scripts/check.mjs`
+
+> If the files are already in your project, just say "initialize Harness."
 
 The full initialization flow is defined in `.claude/skills/harness-init/SKILL.md`.
 
 ### Manual Setup
 
 ```bash
-# Copy template files
-cp -r .claude/  /path/to/your-project/.claude/
-cp    CLAUDE.md /path/to/your-project/CLAUDE.md
-cp    .lsp.json /path/to/your-project/.lsp.json
+# 1. Clone template
+git clone https://github.com/chenklein26-maker/Harness-Starter.git /tmp/harness
 
-# Install language server (pick one)
+# 2. Copy to project
+cp -r /tmp/harness/.claude/  /path/to/your-project/.claude/
+cp    /tmp/harness/CLAUDE.md /path/to/your-project/CLAUDE.md
+cp    /tmp/harness/.lsp.json /path/to/your-project/.lsp.json
+
+# 3. Install language server
 npm install -g typescript-language-server   # TypeScript
 pip install pyright                         # Python
-go install golang.org/x/tools/gopls@latest  # Go
-```
 
-### Verification
+# 4. Verify
+cd /path/to/your-project && node scripts/check.mjs
 
-```bash
-node scripts/check.mjs
+# 5. Tell Claude Code: initialize Harness
 ```
 
 ---

@@ -63,6 +63,15 @@ if (openspecChanges.length > 0) {
   lines.push(...openspecChanges.map(c => "  " + c));
 }
 
+// 检查 CLAUDE.md 是否未初始化
+const claudeMdPath = join(projectRoot, "CLAUDE.md");
+if (existsSync(claudeMdPath)) {
+  const claudeContent = readFileSync(claudeMdPath, "utf-8");
+  if (claudeContent.includes("【待填写")) {
+    lines.push("---", "⚠️ CLAUDE.md 还有占位符未替换，请对 AI 说：帮我初始化 Harness");
+  }
+}
+
 lines.push("------------------------");
 
 process.stdout.write(lines.join("\n"));

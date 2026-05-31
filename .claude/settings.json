@@ -13,6 +13,12 @@
     //     "command": "node .claude/hooks/post-tool-check.mjs"
     //   }
     // ],
+    "PreCompact": [
+      {
+        "type": "command",
+        "command": "node .claude/hooks/pre-compact.mjs"
+      }
+    ],
     "SessionStart": [
       {
         "type": "command",
