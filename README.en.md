@@ -12,6 +12,12 @@ Works with both new and existing projects
 
 </div>
 
+```bash
+# Copy to your project
+cp -r .claude/ CLAUDE.md .lsp.json /path/to/your-project/
+# Then in Claude Code: initialize Harness
+```
+
 ---
 
 ## Design

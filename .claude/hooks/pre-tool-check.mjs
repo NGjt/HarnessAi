@@ -37,14 +37,13 @@ if (tool === "Write" || tool === "Edit") {
 }
 
 // 若需额外拦截规则，可在此文件添加，或在 settings.json 中配置。
-// 常见可选规则（取消注释即可启用）：
-// const DANGEROUS_COMMANDS = [
-//   /rm -rf/,            // 危险删除
-//   /git push --force/,  // 强制推送
-// ];
-// if ((tool === "Bash" || tool === "PowerShell") && DANGEROUS_COMMANDS.some(p => p.test(args.command || ""))) {
-//   process.stdout.write(JSON.stringify({ block: true, reason: "已拦截危险命令" }));
-//   process.exit(0);
-// }
+const DANGEROUS_COMMANDS = [
+  /rm -rf/,            // 危险删除
+  /git push --force/,  // 强制推送
+];
+if ((tool === "Bash" || tool === "PowerShell") && DANGEROUS_COMMANDS.some(p => p.test(args.command || ""))) {
+  process.stdout.write(JSON.stringify({ block: true, reason: "已拦截危险命令" }));
+  process.exit(0);
+}
 
 process.exit(0);

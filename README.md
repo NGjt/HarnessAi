@@ -12,6 +12,12 @@
 
 </div>
 
+```bash
+# 复制到你的项目
+cp -r .claude/ CLAUDE.md .lsp.json /path/to/your-project/
+# 在 Claude Code 中说：帮我初始化 Harness
+```
+
 ---
 
 ## 设计思路

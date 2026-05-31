@@ -1,2 +1,5 @@
 node_modules/
 .claude/reviews/
+.DS_Store
+Thumbs.db
+*.local.json

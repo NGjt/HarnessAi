@@ -48,7 +48,28 @@ if (existsSync(claudeMdPath)) {
   hasGoalRule = rules.includes("Goal-Driven");
 }
 
-// 5. OpenSpec 验证
+// 5. 调试残留检查
+const diffContent = run("git diff --unified=0") + "\n" + run("git diff --cached --unified=0");
+const debugPatterns = [/console\.\w+\s*\(/, /\bTODO\b/, /\bFIXME\b/, /\bdebugger\b/];
+const debugHits = debugPatterns.filter(p => p.test(diffContent)).map(p => {
+  if (p.source === "console\\.\\w+\\s*\\(") return "console.log/warn/error";
+  if (p.source === "\\bTODO\\b" || p.source === "\\bFIXME\\b") return p.source;
+  if (p.source === "\\bdebugger\\b") return "debugger 语句";
+  return p.source;
+});
+
+// 6. 未提交变更检查
+const hasUncommitted = !!run("git status --short 2>/dev/null");
+
+// 7. 依赖变更检查
+const changedFiles = run("git diff --name-only").split("\n").concat(run("git diff --cached --name-only").split("\n")).filter(Boolean);
+const depFiles = ["package.json", "pyproject.toml", "go.mod", "Cargo.toml", "Gemfile"];
+const lockFiles = ["package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock", "poetry.lock", "go.sum", "Cargo.lock", "Gemfile.lock"];
+const depChanged = depFiles.some(d => changedFiles.some(f => f.endsWith(d)));
+const lockChanged = lockFiles.some(l => changedFiles.some(f => f.endsWith(l)));
+const depWithoutLock = depChanged && !lockChanged;
+
+// 8. OpenSpec 验证
 const hasOpenSpec = existsSync(join(projectRoot, "openspec"));
 const pendingChanges = hasOpenSpec
   ? run("ls openspec/changes/ 2>/dev/null | grep -v archive | grep -v '^\\.'") || ""
@@ -66,6 +87,13 @@ if (tooManyLines) flags.push("⚠️ 改动行数过多（>500 行），建议�
 if (pendingChanges) flags.push("ℹ️ 有待归档的 OpenSpec 变更，请运行 openspec archive");
 if (openspecValidate && !openspecPassed) flags.push("❌ OpenSpec 验证未通过，请检查规范一致性");
 if (openspecPassed) flags.push("✅ OpenSpec 验证通过");
+if (debugHits.length > 0) {
+  for (const hit of debugHits) {
+    flags.push("⚠️ 变更中包含调试残留：" + hit);
+  }
+}
+if (hasUncommitted) flags.push("ℹ️ 有未提交的变更，建议及时提交");
+if (depWithoutLock) flags.push("⚠️ 依赖文件已修改但未更新 lock 文件");
 
 const report = [
   "## Stop Hook 审查报告",

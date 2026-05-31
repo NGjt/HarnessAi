@@ -45,15 +45,19 @@ description: Initialize this project with the Harness Engineering starter templa
 
 ## Step 3: 检查 Hook 文件
 
-检查 `.claude/hooks/` 下三个文件是否存在：
+检查 `.claude/hooks/` 下四个文件是否存在：
 - `pre-tool-check.mjs` — 防止 AI 修改 .env
 - `session-context.mjs` — 自动注入 git 状态
 - `session-review.mjs` — 对话结束生成审查报告
+- `post-tool-check.mjs` — 自动格式化（可选，L3 升级）
 
 缺失则从模板复制。已有则跳过，不要覆盖。
 
-检查 `.claude/settings.json` 中是否注册了三个 Hook。
+检查 `.claude/settings.json` 中是否注册了三个核心 Hook。
 缺失则补充，已有的其他配置不要删除。
+
+询问用户是否需要启用 PostToolUse Hook（自动格式化）。
+如果用户确认：在 settings.json 中取消 PostToolUse 相关行的注释。
 
 ## Step 4: 检查并安装 LSP
 

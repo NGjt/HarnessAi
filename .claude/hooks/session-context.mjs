@@ -53,6 +53,16 @@ if (existsSync(reviewsDir)) {
   }
 }
 
+// OpenSpec 待处理变更
+const openspecChangesDir = join(projectRoot, "openspec/changes");
+const openspecChanges = existsSync(openspecChangesDir)
+  ? readdirSync(openspecChangesDir).filter(f => f !== "archive" && !f.startsWith("."))
+  : [];
+if (openspecChanges.length > 0) {
+  lines.push("---", "OpenSpec 待处理变更:");
+  lines.push(...openspecChanges.map(c => "  " + c));
+}
+
 lines.push("------------------------");
 
 process.stdout.write(lines.join("\n"));

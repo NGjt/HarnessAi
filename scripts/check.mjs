@@ -21,11 +21,24 @@ const settingsOk = existsSync(join(projectRoot, ".claude/settings.json"));
 checks.push({ name: "settings.json", ok: settingsOk, hint: settingsOk ? "" : "缺少 settings.json，Hook 无法注册" });
 
 // 4. Hooks
-const hooks = ["pre-tool-check.mjs", "session-context.mjs", "session-review.mjs"];
+const hooks = ["pre-tool-check.mjs", "session-context.mjs", "session-review.mjs", "post-tool-check.mjs"];
 for (const h of hooks) {
   const ok = existsSync(join(projectRoot, ".claude/hooks", h));
-  checks.push({ name: `hooks/${h}`, ok, hint: ok ? "" : `${h} 缺失` });
+  if (h === "post-tool-check.mjs") {
+    checks.push({ name: `hooks/${h}`, ok, hint: ok ? "" : `${h} 缺失（可选，用于 L3 自动格式化）` });
+  } else {
+    checks.push({ name: `hooks/${h}`, ok, hint: ok ? "" : `${h} 缺失` });
+  }
 }
+
+// 4b. PostToolUse 注册检查
+const settingsPath = join(projectRoot, ".claude/settings.json");
+let postToolUseRegistered = false;
+if (existsSync(settingsPath)) {
+  const settingsContent = readFileSync(settingsPath, "utf-8");
+  postToolUseRegistered = settingsContent.includes("PostToolUse") && !settingsContent.includes('// "PostToolUse"');
+}
+checks.push({ name: "PostToolUse 已注册", ok: postToolUseRegistered, hint: postToolUseRegistered ? "" : "未在 settings.json 中启用（可选，取消注释即可）" });
 
 // 5. LSP 配置
 const lspOk = existsSync(join(projectRoot, ".lsp.json"));
