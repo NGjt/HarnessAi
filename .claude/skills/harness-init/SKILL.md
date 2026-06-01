@@ -18,9 +18,9 @@ description: Initialize this project with the Harness Engineering starter templa
 
 用户直接让 AI 安装 Harness Starter，还没有模板文件。需要：
 
-1. 克隆模板到临时目录：
+1. 从 `package.json` 的 `repository` 字段获取仓库地址，克隆到临时目录：
    ```
-   git clone https://github.com/chenklein26-maker/Harness-Starter.git /tmp/harness-starter
+   git clone https://github.com/<package.json repository>.git /tmp/harness-starter
    ```
 2. 复制核心文件到项目：
    ```

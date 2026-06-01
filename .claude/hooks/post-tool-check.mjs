@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -14,7 +14,7 @@ const FORMATTERS = [
   { check: "node_modules/.bin/biome", cmd: (f) => `npx biome format --write "${f}" 2>/dev/null` },
 ];
 
-const input = require("fs").readFileSync(0, "utf-8").trim();
+const input = readFileSync(0, "utf-8").trim();
 if (!input) process.exit(0);
 
 let call;

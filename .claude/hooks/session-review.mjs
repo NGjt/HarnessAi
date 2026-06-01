@@ -7,6 +7,19 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = join(__dirname, "../..");
 const reviewsDir = join(projectRoot, ".claude/reviews");
 
+// 读取 Harness 状态
+let harnessState = { phase: "build", mode: "full" };
+const statePath = join(projectRoot, ".claude/.harness-state");
+if (existsSync(statePath)) {
+  try {
+    harnessState = { ...harnessState, ...JSON.parse(readFileSync(statePath, "utf-8")) };
+  } catch {}
+}
+const isDesign = harnessState.phase === "design";
+const isFix = harnessState.phase === "fix";
+const isHotfix = harnessState.mode === "hotfix";
+const isTweak = harnessState.mode === "tweak";
+
 const run = (cmd) => {
   try {
     return execSync(cmd, { cwd: projectRoot, encoding: "utf-8", timeout: 8000 }).trim();
@@ -35,8 +48,6 @@ const diffStat = run("git diff --stat");
 const totalChanges = diffStat ? (diffStat.match(/(\d+) insertions?/)?.[1] || "0") : "0";
 const totalDeletions = diffStat ? (diffStat.match(/(\d+) deletions?/)?.[1] || "0") : "0";
 const totalLines = parseInt(totalChanges) + parseInt(totalDeletions);
-const tooManyFiles = allChanged.length > 10;
-const tooManyLines = totalLines > 500;
 
 // 4. 读取 CLAUDE.md 规则
 const claudeMdPath = join(projectRoot, "CLAUDE.md");
@@ -80,20 +91,29 @@ const openspecPassed = openspecValidate && !openspecValidate.includes("error") &
 // 写入报告
 mkdirSync(reviewsDir, { recursive: true });
 
+// 根据 phase/mode 调整阈值
+const maxFiles = isFix ? 5 : (isDesign ? 20 : 10);
+const maxLines = isHotfix ? Infinity : (isTweak ? Infinity : 500);
+
+const tooManyFiles = allChanged.length > maxFiles;
+const tooManyLines = totalLines > maxLines;
+
 const flags = [];
 if (sensitiveChanges.length > 0) flags.push("⚠️ 涉及敏感文件");
-if (tooManyFiles) flags.push("⚠️ 改动文件过多（>10 个），是否违反 Simplicity First？");
-if (tooManyLines) flags.push("⚠️ 改动行数过多（>500 行），建议分多次提交");
+if (tooManyFiles) flags.push(`⚠️ 改动文件过多（>${maxFiles} 个），是否违反 Simplicity First？`);
+if (tooManyLines) flags.push(`⚠️ 改动行数过多（>${maxLines} 行），建议分多次提交`);
 if (pendingChanges) flags.push("ℹ️ 有待归档的 OpenSpec 变更，请运行 openspec archive");
 if (openspecValidate && !openspecPassed) flags.push("❌ OpenSpec 验证未通过，请检查规范一致性");
 if (openspecPassed) flags.push("✅ OpenSpec 验证通过");
-if (debugHits.length > 0) {
+// design/tweak 阶段跳过调试残留检查
+if (!isDesign && !isTweak && debugHits.length > 0) {
   for (const hit of debugHits) {
     flags.push("⚠️ 变更中包含调试残留：" + hit);
   }
 }
 if (hasUncommitted) flags.push("ℹ️ 有未提交的变更，建议及时提交");
-if (depWithoutLock) flags.push("⚠️ 依赖文件已修改但未更新 lock 文件");
+if (!isTweak && depWithoutLock) flags.push("⚠️ 依赖文件已修改但未更新 lock 文件");
+if (isFix && allChanged.length > 5) flags.push("⚠️ 修复模式下变更范围偏大，确认是否超出修复目标");
 
 const report = [
   "## Stop Hook 审查报告",

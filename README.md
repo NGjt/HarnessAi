@@ -10,6 +10,8 @@
   <img src="https://img.shields.io/badge/Claude_Code-2.1%2B-blue" alt="Claude Code 2.1+">
 </p>
 
+> 其他平台（Cursor、Codex、Gemini 等）用户直接告诉 AI：「适配这个模板到我的环境」
+
 </div>
 
 
@@ -19,7 +21,7 @@
 
 每次新建项目或打开已有项目时，都需要反复告诉 AI 同样的规则：技术栈是什么、测试怎么跑、哪些文件不能动。
 
-Harness Starter 把这些重复劳动固化为三层自动化机制。装一次，所有项目通用。
+Harness Starter 把这些重复劳动固化为 Hook 自动化机制。装一次，所有项目通用。
 
 ---
 
@@ -39,7 +41,16 @@ AI 会：
 3. 安装对应的 Language Server
 4. 运行健康检查确认一切就绪
 
-### 方式二：手动复制
+### 方式二：npm 一键安装
+
+```bash
+npx harness-starter              # 安装到当前目录
+npx harness-starter /path/to/proj  # 安装到指定目录
+```
+
+然后 Claude Code 中输入 `帮我初始化 Harness` 完成配置。
+
+### 方式三：手动复制
 
 ```bash
 # 复制模板文件
@@ -103,7 +114,7 @@ AI 会自动完成全流程：
 
 ```bash
 # 1. 克隆模板
-git clone https://github.com/chenklein26-maker/Harness-Starter.git /tmp/harness
+git clone https://github.com/<your-org>/Harness-Starter.git /tmp/harness
 
 # 2. 复制到项目
 cp -r /tmp/harness/.claude/  /path/to/your-project/.claude/
@@ -129,18 +140,28 @@ cd /path/to/your-project && node scripts/check.mjs
 your-project/
 ├── CLAUDE.md                   AI 行为规则
 ├── .lsp.json                   LSP 配置
+├── package.json                npm 分发
 ├── scripts/
-│   └── check.mjs               健康检查
+│   ├── check.mjs               健康检查
+│   ├── init.mjs                一键安装
+│   └── upgrade.mjs             升级同步
 │
 ├── .claude/
 │   ├── settings.json           Hook 注册
+│   ├── .harness-state          状态感知
 │   ├── skills/
-│   │   └── harness-init/
-│   │       └── SKILL.md        AI 安装向导
+│   │   ├── harness-init/       AI 安装向导
+│   │   └── harness-mode/       工作流模式
 │   └── hooks/
-│       ├── pre-tool-check.mjs  .env 文件保护
-│       ├── session-context.mjs git 状态注入
-│       └── session-review.mjs  变更审查报告
+│       ├── pre-tool-check.mjs  安全拦截
+│       ├── post-tool-check.mjs 自动格式化
+│       ├── session-context.mjs 上下文注入
+│       ├── session-review.mjs  变更审查
+│       └── pre-compact.mjs     长会话保护
+│
+├── .github/
+│   └── workflows/
+│       └── harness-check.yml   CI 检查
 ```
 
 ---
@@ -165,12 +186,25 @@ your-project/
 
 以下功能默认不开启，需要时按需解锁。
 
-### 安全增强
+### 工作流模式
 
-`pre-tool-check.mjs` 中注释了更多拦截规则，取消注释即可启用：
-- `rm -rf` 危险操作拦截
-- `git push --force` 拦截
-- `git reset --hard` 拦截
+Harness 支持三种工作模式，自动调整审查严格度：
+
+| 模式 | 效果 |
+|------|------|
+| `/harness-mode full` | 完整检查，所有规则生效 |
+| `/harness-mode hotfix` | 紧急修复，跳过行数/文件数检查 |
+| `/harness-mode tweak` | 微调，仅保护 .env |
+
+三种阶段也会影响行为：
+
+| 阶段 | 效果 |
+|------|------|
+| `/harness-phase design` | 设计阶段，宽松审查，不检查调试残留 |
+| `/harness-phase build` | 构建阶段，正常审查 |
+| `/harness-phase fix` | 修复阶段，>5 个文件变更即告警 |
+
+当前状态由 `.claude/.harness-state` 驱动，SessionStart 自动注入。完整说明见 `.claude/skills/harness-mode/SKILL.md`。
 
 ### 质量评估（Eval）
 

@@ -10,6 +10,8 @@ Works with both new and existing projects
   <img src="https://img.shields.io/badge/Claude_Code-2.1%2B-blue" alt="Claude Code 2.1+">
 </p>
 
+> Other platforms (Cursor, Codex, Gemini, etc.): just tell your AI "adapt this template to my environment"
+
 </div>
 
 ```bash
@@ -24,7 +26,7 @@ cp -r .claude/ CLAUDE.md .lsp.json /path/to/your-project/
 
 Every new project requires repeating the same rules to the AI: tech stack, test commands, files to avoid.
 
-Harness Starter automates this through three layers. Install once, use across all projects.
+Harness Starter automates this through hooks. Install once, use across all projects.
 
 ---
 
@@ -44,11 +46,20 @@ The AI will:
 3. Fill in CLAUDE.md, install Language Server
 4. Run health check to confirm everything is ready
 
-### Option 2: Manual Setup
+### Option 2: npm Install
+
+```bash
+npx harness-starter              # Install to current dir
+npx harness-starter /path/to/proj  # Install to target dir
+```
+
+Then tell Claude Code `initialize Harness` to complete setup.
+
+### Option 3: Manual Setup
 
 ```bash
 # Clone the template
-git clone https://github.com/chenklein26-maker/Harness-Starter.git /tmp/harness
+git clone https://github.com/<your-org>/Harness-Starter.git /tmp/harness
 
 # Copy to your project
 cp -r /tmp/harness/.claude/  /path/to/your-project/.claude/
@@ -117,7 +128,7 @@ The full initialization flow is defined in `.claude/skills/harness-init/SKILL.md
 
 ```bash
 # 1. Clone template
-git clone https://github.com/chenklein26-maker/Harness-Starter.git /tmp/harness
+git clone https://github.com/<your-org>/Harness-Starter.git /tmp/harness
 
 # 2. Copy to project
 cp -r /tmp/harness/.claude/  /path/to/your-project/.claude/
@@ -142,18 +153,28 @@ cd /path/to/your-project && node scripts/check.mjs
 your-project/
 ├── CLAUDE.md                   AI behavior rules
 ├── .lsp.json                   LSP configuration
+├── package.json                npm distribution
 ├── scripts/
-│   └── check.mjs               Health check
+│   ├── check.mjs               Health check
+│   ├── init.mjs                One-click install
+│   └── upgrade.mjs             Upgrade sync
 │
 ├── .claude/
 │   ├── settings.json           Hook registration
+│   ├── .harness-state          State awareness
 │   ├── skills/
-│   │   └── harness-init/
-│   │       └── SKILL.md        AI setup workflow
+│   │   ├── harness-init/       AI setup workflow
+│   │   └── harness-mode/       Workflow modes
 │   └── hooks/
-│       ├── pre-tool-check.mjs  .env file protection
-│       ├── session-context.mjs Git status injection
-│       └── session-review.mjs  Change review report
+│       ├── pre-tool-check.mjs  Safety interceptor
+│       ├── post-tool-check.mjs Auto formatter
+│       ├── session-context.mjs Context injection
+│       ├── session-review.mjs  Change review
+│       └── pre-compact.mjs     Long-session guard
+│
+├── .github/
+│   └── workflows/
+│       └── harness-check.yml   CI check
 ```
 
 ---
@@ -178,12 +199,25 @@ your-project/
 
 The following features are disabled by default. Enable them as needed.
 
-### Enhanced Safety
+### Workflow Modes
 
-`pre-tool-check.mjs` contains additional safety rules (commented out). Uncomment to enable:
-- Block `rm -rf` dangerous operations
-- Block `git push --force`
-- Block `git reset --hard`
+Harness supports three modes that auto-tune review strictness:
+
+| Mode | Effect |
+|------|--------|
+| `/harness-mode full` | Full checks, all rules active |
+| `/harness-mode hotfix` | Emergency fix, skip line/file count checks |
+| `/harness-mode tweak` | Minimal, .env protection only |
+
+Three phases also affect behavior:
+
+| Phase | Effect |
+|------|--------|
+| `/harness-phase design` | Relaxed review, skip debug residue checks |
+| `/harness-phase build` | Normal review |
+| `/harness-phase fix` | Tightened, warn if >5 files changed |
+
+State is stored in `.claude/.harness-state` and injected at SessionStart. See `.claude/skills/harness-mode/SKILL.md`.
 
 ### Quality Evaluation (Eval)
 

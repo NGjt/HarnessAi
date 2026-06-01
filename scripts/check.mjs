@@ -105,10 +105,25 @@ if (hasOpenSpec) {
   checks.push({ name: "OpenSpec CLI", ok: hasCli, hint: hasCli ? "" : "未安装，执行 npm install -g @fission-ai/openspec" });
 }
 
-// ── harness-init Skill ───────────────────
+// ── 状态感知 ───────────────────────────
 
-const skillOk = existsSync(join(projectRoot, ".claude/skills/harness-init/SKILL.md"));
-checks.push({ name: "harness-init Skill", ok: skillOk, hint: skillOk ? "" : "缺少初始化 Skill，用户无法一键安装" });
+const stateOk = existsSync(join(projectRoot, ".claude/.harness-state"));
+checks.push({ name: ".harness-state", ok: stateOk, hint: stateOk ? "" : "缺少状态文件，模式/阶段感知将不生效" });
+
+// ── Skills ──────────────────────────────
+
+const harnessInitOk = existsSync(join(projectRoot, ".claude/skills/harness-init/SKILL.md"));
+checks.push({ name: "harness-init Skill", ok: harnessInitOk, hint: harnessInitOk ? "" : "缺少初始化 Skill，用户无法一键安装" });
+
+const harnessModeOk = existsSync(join(projectRoot, ".claude/skills/harness-mode/SKILL.md"));
+checks.push({ name: "harness-mode Skill", ok: harnessModeOk, hint: harnessModeOk ? "" : "缺少模式切换 Skill" });
+
+// ── npm 分发 ────────────────────────────
+
+const packageJsonOk = existsSync(join(projectRoot, "package.json"));
+const initScriptOk = existsSync(join(projectRoot, "scripts/init.mjs"));
+checks.push({ name: "npm 分发 (package.json)", ok: packageJsonOk, hint: packageJsonOk ? "" : "缺少 package.json，无法通过 npm 安装" });
+checks.push({ name: "npm init 脚本", ok: initScriptOk, hint: initScriptOk ? "" : "缺少 init.mjs，npm 分发不完整" });
 
 // ── CLAUDE.md 内容完整性 ─────────────────
 

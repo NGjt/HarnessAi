@@ -14,19 +14,23 @@ import { execSync } from "child_process";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = join(__dirname, "..");
 
-const REPO = "chenklein26-maker/Harness-Starter";
+// 从 package.json 读取仓库地址（单一配置源）
+const pkg = JSON.parse(readFileSync(join(projectRoot, "package.json"), "utf-8"));
+const REPO = pkg.repository || "chenklein26-maker/Harness-Starter";
 const REF = "main";
 const TMP_DIR = join(projectRoot, ".claude", ".upgrade-tmp");
 
-// 模板文件列表（只更新这些，忽略用户自定义文件）
+// 模板文件列表 — 与 package.json "files" 字段保持一致
 const TEMPLATE_FILES = [
-  // 核心配置
   "CLAUDE.md",
   ".lsp.json",
   ".gitignore",
-  // 脚本
+  "package.json",
+  "LICENSE",
   "scripts/check.mjs",
-  // 仅在用户未修改时才会被覆盖的 hooks
+  "scripts/init.mjs",
+  "scripts/upgrade.mjs",
+  ".claude/.harness-state",
   ".claude/hooks/pre-tool-check.mjs",
   ".claude/hooks/session-context.mjs",
   ".claude/hooks/session-review.mjs",
@@ -34,6 +38,7 @@ const TEMPLATE_FILES = [
   ".claude/hooks/pre-compact.mjs",
   ".claude/settings.json",
   ".claude/skills/harness-init/SKILL.md",
+  ".claude/skills/harness-mode/SKILL.md",
   ".github/workflows/harness-check.yml",
   "README.md",
   "README.en.md",

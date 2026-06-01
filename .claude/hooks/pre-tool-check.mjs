@@ -1,9 +1,20 @@
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = join(__dirname, "../..");
+
+// 读取 Harness 状态
+let harnessState = { phase: "build", mode: "full" };
+const statePath = join(projectRoot, ".claude/.harness-state");
+if (existsSync(statePath)) {
+  try {
+    harnessState = { ...harnessState, ...JSON.parse(readFileSync(statePath, "utf-8")) };
+  } catch {}
+}
+const isTweak = harnessState.mode === "tweak";
+const isDesign = harnessState.phase === "design";
 
 const input = readFileSync(0, "utf-8").trim();
 if (!input) process.exit(0);
@@ -19,7 +30,7 @@ const tool = call.tool || "";
 const args = call.input || {};
 const filePath = args.file_path || args.path || "";
 
-// 硬拦截：禁止 AI 直接修改 .env 文件
+// 硬拦截：禁止 AI 直接修改 .env 文件（所有模式均生效）
 const PROTECTED_FILES = [/(^|\/|\\)\.env$/, /(^|\/|\\)\.env\.local$/];
 
 if (tool === "Write" || tool === "Edit") {
@@ -36,19 +47,21 @@ if (tool === "Write" || tool === "Edit") {
   }
 }
 
-// 若需额外拦截规则，可在此文件添加，或在 settings.json 中配置。
-const DANGEROUS_COMMANDS = [
-  { pattern: /rm -rf/, label: "rm -rf", alt: "使用 trash <file> 或 git rm <file>" },
-  { pattern: /git push --force/, label: "git push --force", alt: "使用 git push --force-with-lease" },
-];
-if (tool === "Bash" || tool === "PowerShell") {
-  const matched = DANGEROUS_COMMANDS.find((d) => d.pattern.test(args.command || ""));
-  if (matched) {
-    process.stdout.write(JSON.stringify({
-      block: true,
-      reason: `⚠️ 安全拦截：${matched.label} 被禁用\n   → 替代方案：${matched.alt}\n   → 如需强制执行，请在终端手动输入命令`,
-    }));
-    process.exit(0);
+// 危险命令拦截（tweak/design 模式下放行）
+if (!isTweak && !isDesign) {
+  const DANGEROUS_COMMANDS = [
+    { pattern: /rm -rf/, label: "rm -rf", alt: "使用 trash <file> 或 git rm <file>" },
+    { pattern: /git push --force/, label: "git push --force", alt: "使用 git push --force-with-lease" },
+  ];
+  if (tool === "Bash" || tool === "PowerShell") {
+    const matched = DANGEROUS_COMMANDS.find((d) => d.pattern.test(args.command || ""));
+    if (matched) {
+      process.stdout.write(JSON.stringify({
+        block: true,
+        reason: `⚠️ 安全拦截：${matched.label} 被禁用\n   → 替代方案：${matched.alt}\n   → 如需强制执行，请在终端手动输入命令\n   → 当前模式=${harnessState.mode}，切换为 tweak 模式可放行`,
+      }));
+      process.exit(0);
+    }
   }
 }
 

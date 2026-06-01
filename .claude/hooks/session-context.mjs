@@ -32,6 +32,16 @@ if (log) {
   lines.push(log);
 }
 
+// Harness 状态感知（阶段 + 模式）
+const statePath = join(projectRoot, ".claude/.harness-state");
+if (existsSync(statePath)) {
+  try {
+    const state = JSON.parse(readFileSync(statePath, "utf-8"));
+    lines.push("---");
+    lines.push(`Harness 状态: 阶段=${state.phase || "build"}  模式=${state.mode || "full"}`);
+  } catch {}
+}
+
 // 加载最近 5 次审查报告
 const reviewsDir = join(projectRoot, ".claude/reviews");
 if (existsSync(reviewsDir)) {
