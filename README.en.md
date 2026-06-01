@@ -16,6 +16,8 @@ Works with both new and existing projects
 
 https://github.com/chenklein26-maker/Harness-Starter
 
+[Xiaohongshu](https://www.xiaohongshu.com/user/profile/5c63da27000000001202556a)
+
 </div>
 
 ---
