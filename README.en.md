@@ -12,6 +12,10 @@ Works with both new and existing projects
 
 > Other platforms (Cursor, Codex, Gemini, etc.): just tell your AI "adapt this template to my environment"
 
+<br>
+
+https://github.com/chenklein26-maker/Harness-Starter
+
 </div>
 
 ---

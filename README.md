@@ -12,6 +12,10 @@
 
 > 其他平台（Cursor、Codex、Gemini 等）用户直接告诉 AI：「适配这个模板到我的环境」
 
+<br>
+
+https://github.com/chenklein26-maker/Harness-Starter
+
 </div>
 
 
