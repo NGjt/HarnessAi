@@ -73,7 +73,61 @@ description: Initialize this project with the Harness Engineering starter templa
 
 如果缺失，补充进去。已有的内容不要覆盖。
 
-## Step 3: 检查 Hook 文件
+## Step 3: Skill 路由发现
+
+根据 Step 1 检测到的技术栈，扫描当前可用的 Skill，询问用户最常见的任务类型，生成路由表写入 CLAUDE.md。
+
+### 3.1 扫描可用 Skill
+
+检查以下位置，汇总所有可用 Skill：
+1. `.claude/skills/` — 项目本地 Skill（如 harness-init、harness-mode）
+2. `~/.claude/skills/` — 用户全局 Skill
+3. 当前会话中 `[Available Skills]` 列表
+4. MCP 工具列表（如果有）
+
+### 3.2 推断任务场景
+
+根据技术栈列出常见任务类型，例如：
+
+| 技术栈 | 常见任务 | 可路由 Skill |
+|--------|---------|-------------|
+| React/Next.js | 组件开发、性能优化 | vercel-react-best-practices |
+| 前端/UI | 页面/H5/幻灯片 | frontend-slides |
+| Node.js/npm | 包管理、构建 | 项目已有 Skill |
+| Python | 测试、格式化 | 项目已有 Skill |
+| 公众号/内容 | 微信排版、写作 | wechat-article-formatter |
+
+**原则**：只推荐当前会话中实际可用的 Skill，不要假设用户安装了某个 Skill。
+
+### 3.3 写入路由表
+
+在 CLAUDE.md 末尾追加一个 `# Skill 路由` 章节，格式如下：
+
+```markdown
+# Skill 路由
+
+根据项目技术栈和任务类型，推荐以下 Skill：
+
+| 任务类型 | Skill | 触发条件 |
+|---------|-------|---------|
+| React 组件开发 | vercel-react-best-practices | 涉及 .tsx / .jsx 文件修改 |
+| 微信文章排版 | wechat-article-formatter-skill | 用户要求排版/发布公众号内容 |
+| Harness 管理 | harness-init / harness-mode | 用户要求调整 Harness 配置 |
+| [项目已有] | [skill-name] | [触发场景] |
+
+> Agent 在遇到对应任务时，应优先调用路由表中的 Skill。
+```
+
+### 3.4 询问用户
+
+生成路由表后，向用户确认：
+- "我根据你的技术栈（XXX）推荐了这些 Skill 路由，有没有需要增减的？"
+- 用户确认后写入 CLAUDE.md
+- 如果用户不确定，先写入推荐的，告诉用户随时可以改
+
+---
+
+## Step 4: 检查 Hook 文件
 
 检查 `.claude/hooks/` 下四个文件是否存在：
 - `pre-tool-check.mjs` — 防止 AI 修改 .env
@@ -83,20 +137,20 @@ description: Initialize this project with the Harness Engineering starter templa
 
 缺失则从模板复制。已有则跳过，不要覆盖。
 
-检查 `.claude/settings.json` 中是否注册了三个核心 Hook。
+检查 `.claude/settings.json` 中是否注册了核心 Hook（PreToolUse / SessionStart / Stop / PreCompact）。
 缺失则补充，已有的其他配置不要删除。
 
 询问用户是否需要启用 PostToolUse Hook（自动格式化）。
 如果用户确认：在 settings.json 中取消 PostToolUse 相关行的注释。
 
-## Step 4: 检查并安装 LSP
+## Step 5: 检查并安装 LSP
 
 检查 `typescript-language-server` 是否可用。
 如果不可用，根据 Step 1 检测到的语言安装对应的 language server。
 
 如果 `.lsp.json` 里的语言配置和项目不符，根据检测结果修改。
 
-## Step 5: 检查 OpenSpec（可选）
+## Step 6: 检查 OpenSpec（可选）
 
 询问用户是否需要规范驱动开发工作流。
 如果用户确认：
@@ -104,14 +158,14 @@ description: Initialize this project with the Harness Engineering starter templa
 - 初始化：`openspec init`
 - OpenSpec 会在 `.claude/` 下添加 commands 和 skills，不要阻止
 
-## Step 6: 运行健康检查
+## Step 7: 运行健康检查
 
 执行 `node scripts/check.mjs`，向用户展示结果。
 如果有失败项，逐一处理。
 
-## Step 7: 完成提示
+## Step 8: 完成提示
 
 向用户说明当前 Harness 状态：
-- 已启用的安全机制（三层 Hook）
+- 已启用的 Hook（PreToolUse / SessionStart / Stop / PreCompact）
 - 已安装的依赖（LSP / OpenSpec / codegraph）
 - 还需要用户手动做的事（如果有）
