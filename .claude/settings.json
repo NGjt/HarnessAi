@@ -7,7 +7,7 @@
       }
     ],
     // PostToolUse — 取消注释即可启用自动格式化
-    // "PostToolUse": [
+    // "PostToolUse": [true
     //   {
     //     "type": "command",
     //     "command": "node .claude/hooks/post-tool-check.mjs"
