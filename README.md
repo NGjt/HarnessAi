@@ -120,7 +120,7 @@ AI 会自动完成全流程：
 
 ```bash
 # 1. 克隆模板
-git clone https://github.com/<your-org>/Harness-Starter.git /tmp/harness
+git clone https://github.com/<NGjt>/Harness-Starter.git /tmp/harness
 
 # 2. 复制到项目
 cp -r /tmp/harness/.claude/  /path/to/your-project/.claude/
